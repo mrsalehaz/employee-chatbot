@@ -1,0 +1,10 @@
+﻿fastapi
+uvicorn
+python-multipart
+pypdf2
+langchain
+openai
+chromadb
+pydantic
+tiktoken
+python-dotenv
