@@ -31,12 +31,12 @@ async def root():
 
 @app.get("/chat", response_class=HTMLResponse)
 async def chat_page():
-    with open("frontend/chat.html", "r", encoding="utf-8") as f:
+    with open("chat.html", "r", encoding="utf-8") as f:
         return f.read()
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page():
-    with open("frontend/admin.html", "r", encoding="utf-8") as f:
+    with open("admin.html", "r", encoding="utf-8") as f:
         return f.read()
 
 @app.post("/chat")
@@ -63,3 +63,4 @@ async def delete(fid: str):
     global files_db
     files_db = [x for x in files_db if x["id"] != fid]
     return {"message": "تم الحذف"}
+
