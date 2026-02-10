@@ -1,9 +1,9 @@
 import os
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
 import shutil
 import uuid
 from datetime import datetime
@@ -18,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = "/opt/render/project/src"
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 files_db = []
@@ -28,55 +28,23 @@ class ChatRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    # قائمة الملفات للتشخيص
-    try:
-        files_in_dir = os.listdir(BASE_DIR)
-        frontend_exists = os.path.exists(os.path.join(BASE_DIR, "frontend"))
-        if frontend_exists:
-            frontend_files = os.listdir(os.path.join(BASE_DIR, "frontend"))
-        else:
-            frontend_files = "مجلد frontend غير موجود!"
-    except Exception as e:
-        files_in_dir = str(e)
-        frontend_files = "خطأ في القراءة"
-    
-    return {
-        "message": "النظام يعمل!",
-        "base_dir": BASE_DIR,
-        "files_in_root": files_in_dir,
-        "frontend_exists": frontend_exists,
-        "frontend_files": frontend_files
-    }
+    return {"message": "النظام يعمل!", "chat": "/chat", "admin": "/admin"}
 
 @app.get("/chat", response_class=HTMLResponse)
 async def chat_page():
     try:
-        filepath = os.path.join(BASE_DIR, "frontend", "chat.html")
-        if not os.path.exists(filepath):
-            return f"""
-            <h1>خطأ: الملف غير موجود</h1>
-            <p>المسار: {filepath}</p>
-            <p>المجلدات في BASE_DIR: {os.listdir(BASE_DIR)}</p>
-            """
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open("/opt/render/project/src/frontend/chat.html", "r", encoding="utf-8") as f:
             return f.read()
     except Exception as e:
-        return f"<h1>خطأ داخلي</h1><p>{str(e)}</p>"
+        return f"<h1>خطأ</h1><p>{str(e)}</p>"
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page():
     try:
-        filepath = os.path.join(BASE_DIR, "frontend", "admin.html")
-        if not os.path.exists(filepath):
-            return f"""
-            <h1>خطأ: الملف غير موجود</h1>
-            <p>المسار: {filepath}</p>
-            <p>المجلدات في BASE_DIR: {os.listdir(BASE_DIR)}</p>
-            """
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open("/opt/render/project/src/frontend/admin.html", "r", encoding="utf-8") as f:
             return f.read()
     except Exception as e:
-        return f"<h1>خطأ داخلي</h1><p>{str(e)}</p>"
+        return f"<h1>خطأ</h1><p>{str(e)}</p>"
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
@@ -91,7 +59,7 @@ async def upload(file: UploadFile = File(...)):
     with open(path, "wb") as f:
         shutil.copyfileobj(file.file, f)
     files_db.append({"id": fid, "filename": file.filename, "path": path})
-    return {"message": "تم الرفع"}
+    return {"message": "تم الرفع بنجاح"}
 
 @app.get("/admin/files")
 async def list_files():
