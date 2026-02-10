@@ -24,11 +24,10 @@ files_db = []
 
 class ChatRequest(BaseModel):
     message: str
-    session_id: Optional[str] = None
 
 @app.get("/")
 async def root():
-    return {"status": "online", "chat": "/chat", "admin": "/admin"}
+    return {"message": "النظام يعمل!", "chat": "/chat", "admin": "/admin"}
 
 @app.get("/chat", response_class=HTMLResponse)
 async def chat_page():
@@ -42,24 +41,18 @@ async def admin_page():
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
-    # مؤقتاً: رد بسيط حتى نتأكد من عمل الموقع
-    if not files_db:
-        return {"response": "النظام يعمل! لكن لم يتم رفع الملفات بعد. اذهب إلى /admin لرفع PDF"}
-    return {"response": "تم استلام سؤالك: " + request.message + " (الذكاء الاصطناعي قيد التفعيل)"}
+    return {"response": f"تم استلام رسالتك: {request.message} (النظام في وضع الاختبار)"}
 
 @app.post("/admin/upload")
 async def upload(file: UploadFile = File(...)):
     if not file.filename.endswith('.pdf'):
         raise HTTPException(400, "PDF فقط")
-    
     fid = str(uuid.uuid4())
     path = os.path.join(UPLOAD_DIR, f"{fid}_{file.filename}")
-    
     with open(path, "wb") as f:
         shutil.copyfileobj(file.file, f)
-    
-    files_db.append({"id": fid, "filename": file.filename, "date": datetime.now().isoformat(), "path": path})
-    return {"message": "تم رفع الملف بنجاح", "id": fid}
+    files_db.append({"id": fid, "filename": file.filename, "path": path})
+    return {"message": "تم الرفع"}
 
 @app.get("/admin/files")
 async def list_files():
@@ -68,13 +61,5 @@ async def list_files():
 @app.delete("/admin/files/{fid}")
 async def delete(fid: str):
     global files_db
-    f = next((x for x in files_db if x["id"] == fid), None)
-    if f and os.path.exists(f["path"]):
-        os.remove(f["path"])
     files_db = [x for x in files_db if x["id"] != fid]
     return {"message": "تم الحذف"}
-
-if __name__ == "__main__":
-    import uvicorn
-    port = int(os.getenv("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
