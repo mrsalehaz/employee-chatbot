@@ -9,10 +9,9 @@ import uuid
 from datetime import datetime
 import chromadb
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_community.vectorstores import Chroma
 from langchain.chains import RetrievalQA
-from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 import PyPDF2
 
@@ -149,3 +148,4 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+
